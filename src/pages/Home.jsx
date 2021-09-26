@@ -14,6 +14,8 @@ function Home() {
     const { user, logout } = useContext(AuthContext)
 
     const [showForm, setShowForm] = useState(false)
+    const [logoutForm, setLogoutForm] = useState(false)
+
     const classes = useHomeStyles()
     const { onChange, onSubmit, values } = useForm(addAnimeCallback, {
         name: '', score: 0, status: 'plan'
@@ -76,10 +78,23 @@ function Home() {
                     </Button>
                 </Grid>
                 <Grid item xs={6} md={3}>
-                    <Button onClick={logout}>
+                    <Button onClick={() => setLogoutForm(true)}>
                         LOG OUT
                     </Button>
                 </Grid>
+                <Dialog open={logoutForm} onClose={() => setLogoutForm(false)}>
+                    <DialogContent>
+                        <Typography variant="subtitle1">{user.username} you sure want to go? Stay with me ;-;</Typography>
+                    </DialogContent>
+                    <DialogActions>'
+                        <Button onClick={() => setLogoutForm(false)}>
+                            Stay
+                        </Button>
+                        <Button onClick={logout}>
+                            Fuck ya Parag :)
+                        </Button>
+                    </DialogActions>
+                </Dialog>
                 <Dialog open={showForm} onClose={() => setShowForm(false)}>
                     <DialogTitle>Add Anime</DialogTitle>
                     <DialogContent className={classes.dialogContent}>
