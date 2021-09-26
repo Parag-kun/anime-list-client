@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/react-hooks'
-import { Grid, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, Input, MenuItem, Typography } from '@material-ui/core'
+import { Grid, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, Input, MenuItem, Typography, Tooltip } from '@material-ui/core'
 
 import { AuthContext } from '../context/Auth'
 import AnimeCard from '../components/AnimeCard'
@@ -38,7 +38,7 @@ function Home() {
     })
 
     function addAnimeCallback() {
-        addAnime()       
+        addAnime()
     }
 
     const isEmpty = arr => arr?.length ? arr : null
@@ -64,9 +64,11 @@ function Home() {
                     </FormControl>
                 </Grid>
                 <Grid item xs={6} md={3}>
-                    <Button onClick={() => setShowForm(showForm => !showForm)} color="primary">
-                        ADD
-                    </Button>
+                    <Tooltip title="Add new anime">
+                        <Button onClick={() => setShowForm(showForm => !showForm)} color="primary">
+                            ADD
+                        </Button>
+                    </Tooltip>
                 </Grid>
                 <Grid item xs={6} md={3}>
                     <Button color="primary">
@@ -82,7 +84,7 @@ function Home() {
                     <DialogTitle>Add Anime</DialogTitle>
                     <DialogContent className={classes.dialogContent}>
                         <FormControl>
-                            <TextField name="name" label="Name" value={values.name} onChange={onChange} error={errors.name ? true : false} helperText={errors.name}/>
+                            <TextField name="name" label="Name" value={values.name} onChange={onChange} error={errors.name ? true : false} helperText={errors.name} />
                         </FormControl>
                         <FormControl className={values.status === 'plan' ? classes.disable : ''}>
                             <InputLabel>Score</InputLabel>
@@ -141,7 +143,7 @@ function Home() {
             </Grid>
         </Grid>
     ) : (
-        <Grid container style={{ height: '100vh'}} alignContent="center">
+        <Grid container style={{ height: '100vh' }} alignContent="center">
             <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
                 <Button color="secondary">
                     <Link to="/login" style={{ textDecoration: 'none' }}>Login</Link>

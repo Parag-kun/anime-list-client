@@ -116,10 +116,6 @@ export const useAnimeCardStyles = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center',
     },
-    ratingTwo: {
-        display: 'flex',
-        
-    },
     icon: {
         [theme.breakpoints.down('xs')]: {
             fontSize: 'medium'
@@ -137,9 +133,9 @@ export const useAnimeCardStyles = makeStyles(theme => ({
         pointerEvents: 'none',
         color: 'grey',
     },
-    delete: {
+    action: {
         position: 'absolute',
-        top: 0,
-        left: 0
+        top: -8,
+        left: -8
     }
 }))

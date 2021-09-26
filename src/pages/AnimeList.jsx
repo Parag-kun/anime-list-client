@@ -21,7 +21,9 @@ function AnimeList() {
         variables: { username, sortBy }
     })
 
-    useEffect(() => {}, [sortBy])
+    console.log(animes)
+
+    useEffect(() => {})
 
     const padding = useMediaQueryUtils([10, 40, 80, 150, 250])
 

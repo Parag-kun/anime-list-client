@@ -1,14 +1,15 @@
 import React, { useContext, useState } from 'react'
-import { Grid, Typography, Card, CardMedia, CardContent, Dialog, DialogContent, DialogTitle, DialogActions, TextField, Button, IconButton, FormControl, MenuItem, Select, Input, useMediaQuery } from '@material-ui/core'
+import { Grid, Typography, Card, CardMedia, CardContent, Dialog, DialogContent, DialogTitle, DialogActions, TextField, Button, IconButton, FormControl, MenuItem, Select, Input, useMediaQuery, Tooltip } from '@material-ui/core'
 import StarRateOutlinedIcon from '@material-ui/icons/StarRateOutlined';
 import PeopleIcon from '@material-ui/icons/People'
 import DeleteTwoToneIcon from '@material-ui/icons/DeleteTwoTone';
+import AddCircleRoundedIcon from '@material-ui/icons/AddCircleRounded';
 import { useMutation } from '@apollo/react-hooks';
 
 import { AuthContext } from '../context/Auth';
 import useMediaQueryUtils from '../utils/useMediaQueryUtils';
 import useForm from '../utils/useForm';
-import { EDIT_ANIME, GET_USER_ANIMES, DELETE_AMIME } from '../utils/queries'
+import { EDIT_ANIME, GET_USER_ANIMES, DELETE_AMIME, ADD_ANIME, GET_USER_ANIMES_FOR_RANKING, GET_ANIMES } from '../utils/queries'
 import { useAnimeCardStyles } from '../utils/styles'
 
 function AnimeCard({ name, score, rating, members, imageURL, renderMembers, status, index, filter, ratedBy }) {
@@ -16,9 +17,9 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
     const obj = { xs: 6, sm: 6, md: 4, lg: 6, xl: 4 }
 
     const { user } = useContext(AuthContext)
-    const [dialog, setDialog] = useState(false)    
+    const [dialog, setDialog] = useState(false)
 
-    const { onChange, onSubmit, values } = useForm(addImageCallback, {
+    const { onChange, onSubmit, values } = useForm(updateAnimeCallback, {
         name, score, status, imageURL
     })
 
@@ -27,7 +28,7 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
         refetchQueries: [{ query: GET_USER_ANIMES, variables: { username: user.username } }]
     })
 
-    function addImageCallback() {
+    function updateAnimeCallback() {
         fetch(values.imageURL)
             .then(() => {
                 setDialog(false)
@@ -39,6 +40,11 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
     const [deleteAnime] = useMutation(DELETE_AMIME, {
         variables: { name },
         refetchQueries: [{ query: GET_USER_ANIMES, variables: { username: user.username } }]
+    })
+
+    const [addAnime] = useMutation(ADD_ANIME, {
+        variables: { name, score: 0, status: 'plan' },
+        refetchQueries: [{ query: GET_USER_ANIMES, variables: { username: user.username } }, { query: GET_USER_ANIMES_FOR_RANKING, variables: { username: user.username } }, { query: GET_ANIMES }]
     })
 
     const color = renderMembers && ((obj, value) => obj[value])({ plan: 'rgb(243 136 4)', watching: 'green', completed: 'rgb(21 19 156)' }, status)
@@ -103,9 +109,9 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
                             </Grid>
                             {
                                 renderMembers ? (
-                                    <Grid item xs={6} className={classes.ratingTwo}>
+                                    <Grid item xs={6} className={classes.rating}>
                                         <PeopleIcon className={classes.icon} style={{ color: `${color}`, marginRight: 3 }} />
-                                        <Typography variant="subtitle1" className={classes.select} style={{ color: `${color}` }}>
+                                        <Typography variant="subtitle1" className={classes.select} style={{ color: `${color}`, paddingTop: 3 }}>
                                             {members.watching + members.completed + members.plan}
                                         </Typography>
                                     </Grid>
@@ -167,10 +173,20 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
                     </Grid>
                 </CardContent>
                 {
-                    !renderMembers && (
-                        <IconButton className={classes.delete} color="secondary" onClick={deleteAnime}>
-                            <DeleteTwoToneIcon />
-                        </IconButton>
+                    renderMembers ? (
+                        !status && (
+                            <Tooltip title='Add to list'>
+                                <IconButton className={classes.action} color="primary" onClick={addAnime}>
+                                    <AddCircleRoundedIcon />
+                                </IconButton>
+                            </Tooltip>
+                        )
+                    ) : (
+                        <Tooltip title='Delete from list'>
+                            <IconButton className={classes.action} color="secondary" onClick={deleteAnime}>
+                                <DeleteTwoToneIcon />
+                            </IconButton>
+                        </Tooltip>
                     )
                 }
             </Card>
