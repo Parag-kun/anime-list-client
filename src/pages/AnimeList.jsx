@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useContext } from 'react'
 import { useQuery } from '@apollo/react-hooks'
 import { Grid, CssBaseline, FormControl, InputLabel, Select, Input, MenuItem } from '@material-ui/core'
 
 import AnimeCard from '../components/AnimeCard'
 import useMediaQueryUtils from '../utils/useMediaQueryUtils'
-import { GET_ANIMES, GET_USER_ANIMES_FOR_RANKING } from '../utils/queries'
+import { GET_ANIMES, GET_USER_ANIMES } from '../utils/queries'
 import { useAnimeListStyles } from '../utils/styles'
 import { AuthContext } from '../context/Auth'
 
@@ -17,13 +17,9 @@ function AnimeList() {
         variables: { sortBy }
     })
 
-    const { data: { getUserAnimes: userAnimes = [] } = {} } = useQuery(GET_USER_ANIMES_FOR_RANKING, {
+    const { data: { getUserAnimes: userAnimes = [] } = {} } = useQuery(GET_USER_ANIMES, {
         variables: { username, sortBy }
     })
-
-    console.log(animes)
-
-    useEffect(() => {})
 
     const padding = useMediaQueryUtils([10, 40, 80, 150, 250])
 

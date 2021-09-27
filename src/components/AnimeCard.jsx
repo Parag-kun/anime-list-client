@@ -9,7 +9,7 @@ import { useMutation } from '@apollo/react-hooks';
 import { AuthContext } from '../context/Auth';
 import useMediaQueryUtils from '../utils/useMediaQueryUtils';
 import useForm from '../utils/useForm';
-import { EDIT_ANIME, GET_USER_ANIMES, DELETE_AMIME, ADD_ANIME, GET_USER_ANIMES_FOR_RANKING, GET_ANIMES } from '../utils/queries'
+import { EDIT_ANIME, GET_USER_ANIMES, DELETE_AMIME, ADD_ANIME, GET_ANIMES } from '../utils/queries'
 import { useAnimeCardStyles } from '../utils/styles'
 
 function AnimeCard({ name, score, rating, members, imageURL, renderMembers, status, index, filter, ratedBy }) {
@@ -25,7 +25,12 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
 
     const [updateAnime] = useMutation(EDIT_ANIME, {
         variables: values,
-        refetchQueries: [{ query: GET_USER_ANIMES, variables: { username: user.username } }]
+        update(proxy, { data: { updateAnime }}) {
+            let data = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username } })
+            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: data.getUserAnimes.filter(({ animeName }) => animeName !== updateAnime.animeName) }})
+            data = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username } })
+            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: [updateAnime, ...data.getUserAnimes] }})
+        }
     })
 
     function updateAnimeCallback() {
@@ -39,12 +44,24 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
 
     const [deleteAnime] = useMutation(DELETE_AMIME, {
         variables: { name },
-        refetchQueries: [{ query: GET_USER_ANIMES, variables: { username: user.username } }]
+        update(proxy, result) {
+            const data = proxy.readQuery({
+                query: GET_USER_ANIMES, variables: { username: user.username }
+            })
+
+            proxy.writeQuery({
+                query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: data.getUserAnimes.filter(({ animeName }) => animeName !== result.data.deleteAnime.name) }
+            })
+        }
     })
 
     const [addAnime] = useMutation(ADD_ANIME, {
         variables: { name, score: 0, status: 'plan' },
-        refetchQueries: [{ query: GET_USER_ANIMES, variables: { username: user.username } }, { query: GET_USER_ANIMES_FOR_RANKING, variables: { username: user.username } }, { query: GET_ANIMES }]
+        refetchQueries: [{ query: GET_ANIMES }],
+        update(proxy, result) {
+            const { getUserAnimes } = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username }})
+            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: [result.data.addAnime, ...getUserAnimes] }})
+        }
     })
 
     const color = renderMembers && ((obj, value) => obj[value])({ plan: 'rgb(243 136 4)', watching: 'green', completed: 'rgb(21 19 156)' }, status)

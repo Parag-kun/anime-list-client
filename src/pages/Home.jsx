@@ -30,12 +30,13 @@ function Home() {
 
     const [addAnime] = useMutation(ADD_ANIME, {
         variables: values,
-        refetchQueries: [{ query: GET_USER_ANIMES, variables: { username: user?.username } }],
         onError(err) {
             setErrors(err.graphQLErrors[0]?.extensions?.errors ?? {})
         },
-        update() {
+        update(proxy, result) {
             setShowForm(false)
+            const data = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username }})
+            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: [result.data.addAnime, ...data.getUserAnimes] }})
         }
     })
 
@@ -149,8 +150,8 @@ function Home() {
                 {
                     loading ? (
                         <h1>Loading....</h1>
-                    ) : isEmpty(animes?.filter(({ status }) => filter === status || filter === 'all'))?.map(({ id, animeName, score, status, imageURL, members }) => (
-                        <AnimeCard key={id} imageURL={imageURL} score={score} name={animeName} status={status} filter={filter} members={members} />
+                    ) : isEmpty(animes?.filter(({ status }) => filter === status || filter === 'all'))?.map(({ id, animeName, score, status, imageURL, members }) => (                        
+                            <AnimeCard key={id} imageURL={imageURL} score={score} name={animeName} status={status} filter={filter} members={members} />                        
                     )) ?? (
                         <Grid item xs={12} style={{ textAlign: 'center' }}><Typography color="textSecondary" variant="h4">No anime in the list</Typography></Grid>
                     )

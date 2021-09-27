@@ -3,7 +3,11 @@ import gql from 'graphql-tag'
 export const ADD_ANIME = gql`
     mutation($name: String!, $score: Int!, $status: String!) {
         addAnime(name: $name, score: $score, status: $status) {
-            id
+            id animeName score rating status imageURL members {
+                plan
+                watching
+                completed
+            }
         }
     }
 `
@@ -17,14 +21,6 @@ export const GET_USER_ANIMES = gql`
                 watching
                 completed
             }
-        }
-    }
-`
-
-export const GET_USER_ANIMES_FOR_RANKING = gql`
-    query($username: String!, $sortBy: String) {
-        getUserAnimes(username: $username, sortBy: $sortBy) {
-            status rating animeName
         }
     }
 `
@@ -69,7 +65,7 @@ export const LOGIN = gql`
 export const DELETE_AMIME = gql`
     mutation($name: String!) {
         deleteAnime(name: $name) {
-            id
+            id name
         }
     }
 `
