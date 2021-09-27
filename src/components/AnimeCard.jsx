@@ -56,7 +56,7 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
     })
 
     const [addAnime] = useMutation(ADD_ANIME, {
-        variables: { name, score: 0, status: 'plan' },
+        variables: { name, score: 0, status: 'plan', imageURL },
         refetchQueries: [{ query: GET_ANIMES }],
         update(proxy, result) {
             const { getUserAnimes } = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username }})
