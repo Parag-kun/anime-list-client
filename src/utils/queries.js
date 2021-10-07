@@ -26,8 +26,8 @@ export const GET_USER_ANIMES = gql`
 `
 
 export const GET_ANIMES = gql`    
-    query($sortBy: String) {
-        getAnimes(sortBy: $sortBy) {
+    query($sortBy: String, $searchString: String) {
+        getAnimes(sortBy: $sortBy, searchString: $searchString) {
             id name rating ratedBy imageURL members {
                 plan watching completed
             }
@@ -66,6 +66,38 @@ export const DELETE_AMIME = gql`
     mutation($name: String!) {
         deleteAnime(name: $name) {
             id name
+        }
+    }
+`
+
+export const GET_FRIENDS = gql`
+    query($relation: String!) {
+        getSpecificUsers(relation: $relation) {
+            name friend text
+        }
+    }
+`
+
+export const ADD_FRIENDS = gql`
+    mutation($clickerName: String!, $receiverName: String!) {
+        addFriend(clickerName: $clickerName, receiverName: $receiverName) {
+            name text
+        }
+    }
+`
+
+export const REMOVE_FRIENDS = gql`
+    mutation($clickerName: String!, $receiverName: String!) {
+        removeFriend(clickerName: $clickerName, receiverName: $receiverName) {
+            name text
+        }
+    }
+`
+
+export const GET_USERS = gql`
+    query($searchString: String!) {
+        getUsers(searchString: $searchString) {
+            name text
         }
     }
 `

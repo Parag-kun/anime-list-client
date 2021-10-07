@@ -3,7 +3,7 @@ import { useQuery } from '@apollo/react-hooks'
 import { Grid, CssBaseline, FormControl, InputLabel, Select, Input, MenuItem } from '@material-ui/core'
 
 import AnimeCard from '../components/AnimeCard'
-import useMediaQueryUtils from '../utils/useMediaQueryUtils'
+import Layout from '../components/Layout'
 import { GET_ANIMES, GET_USER_ANIMES } from '../utils/queries'
 import { useAnimeListStyles } from '../utils/styles'
 import { AuthContext } from '../context/Auth'
@@ -21,12 +21,10 @@ function AnimeList() {
         variables: { username, sortBy }
     })
 
-    const padding = useMediaQueryUtils([10, 40, 80, 150, 250])
-
     return (
-        <React.Fragment>
+        <Layout>
             <CssBaseline />
-            <Grid container spacing={1} className={classes.container} style={{ padding: `0px ${padding}px` }}>
+            <Grid container className={classes.container}>
                 <Grid item xs={12} className={classes.menu}>
                     <FormControl>
                         <InputLabel>Sort by</InputLabel>
@@ -40,6 +38,7 @@ function AnimeList() {
                         </Select>
                     </FormControl>
                 </Grid>
+                <Grid item container xs={12} spacing={1}>
                 {
                     loading ? (
                         <h4>Loading....</h4>
@@ -51,8 +50,9 @@ function AnimeList() {
                         )
                     )
                 }
+                </Grid>
             </Grid>
-        </React.Fragment>
+        </Layout>
     )
 }
 

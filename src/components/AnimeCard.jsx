@@ -12,7 +12,7 @@ import useForm from '../utils/useForm';
 import { EDIT_ANIME, GET_USER_ANIMES, DELETE_AMIME, ADD_ANIME, GET_ANIMES } from '../utils/queries'
 import { useAnimeCardStyles } from '../utils/styles'
 
-function AnimeCard({ name, score, rating, members, imageURL, renderMembers, status, index, filter, ratedBy }) {
+function AnimeCard({ name, score, rating, members, imageURL, renderMembers, status, index, filter, ratedBy, friendName, friendStatus }) {
     const classes = useAnimeCardStyles()
     const obj = { xs: 6, sm: 6, md: 4, lg: 6, xl: 4 }
 
@@ -25,11 +25,11 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
 
     const [updateAnime] = useMutation(EDIT_ANIME, {
         variables: values,
-        update(proxy, { data: { updateAnime }}) {
+        update(proxy, { data: { updateAnime } }) {
             let data = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username } })
-            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: data.getUserAnimes.filter(({ animeName }) => animeName !== updateAnime.animeName) }})
+            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: data.getUserAnimes.filter(({ animeName }) => animeName !== updateAnime.animeName) } })
             data = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username } })
-            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: [updateAnime, ...data.getUserAnimes] }})
+            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: [updateAnime, ...data.getUserAnimes] } })
         }
     })
 
@@ -59,12 +59,13 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
         variables: { name, score: 0, status: 'plan', imageURL },
         refetchQueries: [{ query: GET_ANIMES }],
         update(proxy, result) {
-            const { getUserAnimes } = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username }})
-            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: [result.data.addAnime, ...getUserAnimes] }})
+            const { getUserAnimes } = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username } })
+            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: [result.data.addAnime, ...getUserAnimes] } })
         }
     })
 
-    const color = renderMembers && ((obj, value) => obj[value])({ plan: 'rgb(243 136 4)', watching: 'green', completed: 'rgb(21 19 156)' }, status)
+    const color = (renderMembers || friendName) && ((obj, value) => obj[value])({ plan: 'rgb(243 136 4)', watching: 'green', completed: 'rgb(21 19 156)' }, status)
+    const friendColor = friendName && ((obj, value) => obj[value])({ plan: 'rgb(243 136 4)', watching: 'green', completed: 'rgb(21 19 156)' }, friendStatus)
 
     const isLG = useMediaQuery('(min-width:1280px)')
 
@@ -95,11 +96,11 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
                         <Grid item container style={{ fontSize: 10 }}>
                             <Grid item xs={6} className={classes.rating}>
                                 {
-                                    renderMembers ? (
+                                    renderMembers || friendName ? (
                                         <React.Fragment>
                                             <StarRateOutlinedIcon className={classes.icon} style={{ color: `${color}` }} />
                                             <Typography variant="subtitle1" className={classes.select} style={{ color: `${color}` }}>
-                                                {renderMembers ? rating.toFixed(2) : rating}
+                                                {renderMembers ? rating.toFixed(2) : score}
                                             </Typography>
                                         </React.Fragment>
                                     ) : (
@@ -125,12 +126,25 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
 
                             </Grid>
                             {
-                                renderMembers ? (
+                                renderMembers || friendName ? (
                                     <Grid item xs={6} className={classes.rating}>
-                                        <PeopleIcon className={classes.icon} style={{ color: `${color}`, marginRight: 3 }} />
-                                        <Typography variant="subtitle1" className={classes.select} style={{ color: `${color}`, paddingTop: 3 }}>
-                                            {members.watching + members.completed + members.plan}
-                                        </Typography>
+                                        {
+                                            friendName && (
+                                                <Typography variant="subtitle2" style={{ color: `${friendColor}`, border: `1px solid ${friendColor}`, padding: '1px 5px', margin: 2, borderRadius: 5 }}>
+                                                    {friendStatus[0].toUpperCase() + friendStatus.slice(1)}
+                                                </Typography>
+                                            )
+                                        }
+                                        {
+                                            renderMembers && (
+                                                <React.Fragment>
+                                                    <PeopleIcon className={classes.icon} style={{ color: `${color}`, marginRight: 3 }} />
+                                                    <Typography variant="subtitle1" className={classes.select} style={{ color: `${color}`, paddingTop: 3 }}>
+                                                        {members.watching + members.completed + members.plan}
+                                                    </Typography>
+                                                </React.Fragment>
+                                            )
+                                        }
                                     </Grid>
                                 ) : (
                                     <Grid item xs={6} className={classes.rating}>
@@ -190,13 +204,17 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
                     </Grid>
                 </CardContent>
                 {
-                    renderMembers ? (
-                        !status && (
+                    renderMembers || friendName ? (
+                        !status ? (
                             <Tooltip title='Add to list'>
                                 <IconButton className={classes.action} color="primary" onClick={addAnime}>
                                     <AddCircleRoundedIcon />
                                 </IconButton>
                             </Tooltip>
+                        ) : (
+                            <IconButton className={classes.action} style={{ pointerEvents: 'none' }} >
+
+                            </IconButton>
                         )
                     ) : (
                         <Tooltip title='Delete from list'>
@@ -207,7 +225,7 @@ function AnimeCard({ name, score, rating, members, imageURL, renderMembers, stat
                     )
                 }
             </Card>
-        </Grid>
+        </Grid >
     )
 }
 

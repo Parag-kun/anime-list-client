@@ -1,163 +1,99 @@
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery, useMutation } from '@apollo/react-hooks'
-import { Grid, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, Input, MenuItem, Typography, Tooltip } from '@material-ui/core'
+import { useQuery } from '@apollo/react-hooks'
+import { Grid, Dialog, DialogContent, DialogActions, Button, FormControl, InputLabel, Select, MenuItem, Typography, Avatar, IconButton } from '@material-ui/core'
+import ExitToAppTwoToneIcon from '@material-ui/icons/ExitToAppTwoTone';
 
 import { AuthContext } from '../context/Auth'
 import AnimeCard from '../components/AnimeCard'
-import useForm from '../utils/useForm'
-import useMediaQueryUtils from '../utils/useMediaQueryUtils'
-import { GET_USER_ANIMES, ADD_ANIME } from '../utils/queries'
+import Layout from '../components/Layout'
+import { GET_USER_ANIMES } from '../utils/queries'
 import { useHomeStyles } from '../utils/styles'
 
-function Home() {
+function Home({ friendName }) {
     const { user, logout } = useContext(AuthContext)
-
-    const [showForm, setShowForm] = useState(false)
+    
     const [logoutForm, setLogoutForm] = useState(false)
 
     const classes = useHomeStyles()
-    const { onChange, onSubmit, values } = useForm(addAnimeCallback, {
-        name: '', score: 0, status: 'plan'
-    })
 
     const [filter, setFilter] = useState('all')
-    const [errors, setErrors] = useState({})
 
     const { loading, data: { getUserAnimes: animes } = {} } = useQuery(GET_USER_ANIMES, {
         variables: { username: user?.username }
     })
 
-    const [addAnime] = useMutation(ADD_ANIME, {
-        variables: values,
-        onError(err) {
-            setErrors(err.graphQLErrors[0]?.extensions?.errors ?? {})
-        },
-        update(proxy, result) {
-            setShowForm(false)
-            const data = proxy.readQuery({ query: GET_USER_ANIMES, variables: { username: user.username }})
-            proxy.writeQuery({ query: GET_USER_ANIMES, variables: { username: user.username }, data: { getUserAnimes: [result.data.addAnime, ...data.getUserAnimes] }})
-        }
+    const { data: { getUserAnimes: friendAnimes = [] } = {} } = useQuery(GET_USER_ANIMES, {
+        variables: { username: friendName ?? '' }
     })
-
-    function addAnimeCallback() {
-        addAnime()
-    }
 
     const isEmpty = arr => arr?.length ? arr : null
 
-    const padding = useMediaQueryUtils([10, 40, 80, 150, 250])
-
     const homePage = user ? (
-        <Grid container className={classes.container} style={{ padding: `0px ${padding}px` }}>
-            <Grid item container xs={12} className={classes.menu} alignItems="center">
-                <Grid item xs={6} md={3}>
-                    <FormControl variant="filled" className={classes.filter}>
-                        <InputLabel id="filter">Filter</InputLabel>
-                        <Select
-                            labelId="filter"
-                            value={filter}
-                            onChange={e => setFilter(e.target.value)}
-                        >
-                            <MenuItem value="all">All</MenuItem>
-                            <MenuItem value="plan">Plan to watch</MenuItem>
-                            <MenuItem value="watching">Watching</MenuItem>
-                            <MenuItem value="completed">Completed</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Grid>
-                <Grid item xs={6} md={3}>
-                    <Tooltip title="Add new anime">
-                        <Button onClick={() => setShowForm(showForm => !showForm)} color="primary">
-                            ADD
-                        </Button>
-                    </Tooltip>
-                </Grid>
-                <Grid item xs={6} md={3}>
-                    <Button color="primary">
-                        <Link to="/animelist" style={{ textDecoration: 'none' }}>Ranking</Link>
-                    </Button>
-                </Grid>
-                <Grid item xs={6} md={3}>
-                    <Button onClick={() => setLogoutForm(true)}>
-                        LOG OUT
-                    </Button>
-                </Grid>
-                <Dialog open={logoutForm} onClose={() => setLogoutForm(false)}>
-                    <DialogContent>
-                        <Typography variant="subtitle1">{user.username} you sure want to go? Stay with me ;-;</Typography>
-                    </DialogContent>
-                    <DialogActions>'
-                        <Button onClick={() => setLogoutForm(false)}>
-                            Stay
-                        </Button>
-                        <Button onClick={logout}>
-                            Fuck ya Parag :)
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-                <Dialog open={showForm} onClose={() => setShowForm(false)}>
-                    <DialogTitle>Add Anime</DialogTitle>
-                    <DialogContent className={classes.dialogContent}>
-                        <FormControl>
-                            <TextField name="name" label="Name" value={values.name} onChange={onChange} error={errors.name ? true : false} helperText={errors.name} />
-                        </FormControl>
-                        <FormControl className={values.status === 'plan' ? classes.disable : ''}>
-                            <InputLabel>Score</InputLabel>
+        <Layout>
+            <Grid container className={classes.container}>
+                <Grid item container xs={12} className={classes.menu} justifyContent="space-around" alignItems="center">
+                    <Grid item xs={5}>
+                        <FormControl variant="standard" className={classes.filter}>
+                            <InputLabel id="filter">Filter</InputLabel>
                             <Select
-                                name="score"
-                                value={values.status === 'plan' ? 0 : values.score}
-                                onChange={onChange}
-                                input={<Input type="number" />}
+                                labelId="filter"
+                                value={filter}
+                                onChange={e => setFilter(e.target.value)}
                             >
-                                <MenuItem value={0}>--</MenuItem>
-                                <MenuItem value={1}>1</MenuItem>
-                                <MenuItem value={2}>2</MenuItem>
-                                <MenuItem value={3}>3</MenuItem>
-                                <MenuItem value={4}>4</MenuItem>
-                                <MenuItem value={5}>5</MenuItem>
-                                <MenuItem value={6}>6</MenuItem>
-                                <MenuItem value={7}>7</MenuItem>
-                                <MenuItem value={8}>8</MenuItem>
-                                <MenuItem value={9}>9</MenuItem>
-                                <MenuItem value={10}>10</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControl variant="filled" className={classes.dialogFilter}>
-                            <InputLabel>Status</InputLabel>
-                            <Select
-                                name="status"
-                                value={values.status}
-                                onChange={e => onChange(e, false)}
-                            >
+                                <MenuItem value="all">All</MenuItem>
                                 <MenuItem value="plan">Plan to watch</MenuItem>
                                 <MenuItem value="watching">Watching</MenuItem>
                                 <MenuItem value="completed">Completed</MenuItem>
                             </Select>
                         </FormControl>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setShowForm(false)} color="primary">
-                            Cancel
-                        </Button>
-                        <Button onClick={onSubmit} color="primary">
-                            ADD
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                    </Grid>
+                    <Grid item xs={5}>
+                        <div className={classes.avatar}>
+                            <Avatar src="https://www.ssrl-uark.com/wp-content/uploads/2014/06/no-profile-image.png"></Avatar>
+                            <Typography variant="h6">{friendName ?? user.username}</Typography>
+                        </div>
+                        <IconButton onClick={friendName ? (() => {}) : (() => setLogoutForm(true))} className={classes.button}>
+                            {
+                                friendName ? (
+                                    <Link to="/users"><ExitToAppTwoToneIcon /></Link>
+                                ) : (
+                                    <Link><ExitToAppTwoToneIcon /></Link>
+                                )
+                            }
+                        </IconButton>
+                    </Grid>
+                    <Dialog open={logoutForm} onClose={() => setLogoutForm(false)}>
+                        <DialogContent>
+                            <Typography variant="subtitle1">{user.username} you sure you want to leave?</Typography>
+                        </DialogContent>
+                        <DialogActions>'
+                            <Button onClick={() => setLogoutForm(false)}>
+                                Stay
+                            </Button>
+                            <Button onClick={logout}>
+                                Leave
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+
+                </Grid>
+                <Grid container item xs={12} spacing={1}>
+                    {
+                        loading ? (
+                            <h4 style={{ textAlign: 'center' }}>Loading...</h4>
+                        ) : friendName ? isEmpty(friendAnimes?.filter(({ status }) => filter === status || filter === 'all'))?.map(({ id, animeName, score, status, imageURL, members }) => (
+                            <AnimeCard key={id} imageURL={imageURL} score={score} name={animeName} friendStatus={status} filter={filter} members={members} friendName={friendName} status={animes.find(({ animeName: name }) => name === animeName)?.status} /> 
+                        )) : (
+                            isEmpty(animes?.filter(({ status }) => filter === status || filter === 'all'))?.map(({ id, animeName, score, status, imageURL, members }) => (
+                                <AnimeCard key={id} imageURL={imageURL} score={score} name={animeName} status={status} filter={filter} members={members}/>
+                            ))) ?? (
+                                    <Grid item xs={12} style={{ textAlign: 'center' }}><Typography color="textSecondary" variant="h6">No anime in the list</Typography></Grid>
+                                )
+                    }
+                </Grid>
             </Grid>
-            <Grid container item xs={12} spacing={1}>
-                {
-                    loading ? (
-                        <h1>Loading....</h1>
-                    ) : isEmpty(animes?.filter(({ status }) => filter === status || filter === 'all'))?.map(({ id, animeName, score, status, imageURL, members }) => (                        
-                            <AnimeCard key={id} imageURL={imageURL} score={score} name={animeName} status={status} filter={filter} members={members} />                        
-                    )) ?? (
-                        <Grid item xs={12} style={{ textAlign: 'center' }}><Typography color="textSecondary" variant="h4">No anime in the list</Typography></Grid>
-                    )
-                }
-            </Grid>
-        </Grid>
+        </Layout>
     ) : (
         <Grid container style={{ height: '100vh' }} alignContent="center">
             <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
