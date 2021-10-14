@@ -18,8 +18,6 @@ function Users() {
 
     const isEmpty = arr => arr.length === 0 ? null : arr
 
-    // console.log(friends)
-
     return (
         <Layout>
             <Grid container className={classes.container}>

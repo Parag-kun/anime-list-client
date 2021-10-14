@@ -1,13 +1,20 @@
 import React from 'react'
-import { useQuery } from '@apollo/react-hooks'
-import { GET_USERS } from '../utils/queries'
+import { useQuery, useSubscription } from '@apollo/react-hooks'
+import { GET_USERS, SUBSCRIPTION } from '../utils/queries'
 
 import UserCard from './UserCard'
 
 function SearchUsers({ searchString }) {
-    const { loading, data: { getUsers: users = [] } = {} } = useQuery(GET_USERS, {
+    let { loading, data: { getUsers: users = [] } = {} } = useQuery(GET_USERS, {
         variables: { searchString }
     })
+
+    const { data: { updateRelation } = {}} = useSubscription(SUBSCRIPTION)
+
+    if (updateRelation) {
+        users = users.filter(({ name }) => name !== updateRelation.name)
+        users.push(updateRelation)
+    }
 
     return (
         <React.Fragment>
