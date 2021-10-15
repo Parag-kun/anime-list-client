@@ -102,11 +102,3 @@ export const GET_USERS = gql`
     }
 `
 
-export const SUBSCRIPTION = gql`
-    subscription {
-        updateRelation {
-            name
-            text
-        }
-    }
-`
