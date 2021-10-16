@@ -51,5 +51,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://damp-headland-47501.herokuapp.com/graphql"
+  "proxy": "https://damp-headland-47501.herokuapp.com/"
 }
